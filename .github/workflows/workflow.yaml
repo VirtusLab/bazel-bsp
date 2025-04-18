@@ -1,0 +1,36 @@
+name: Continuous integration
+on:
+  pull_request:
+  push:
+    branches: ['main'] # ['**']
+    tags: [v*]
+jobs:
+  integration-tests:
+    name: Run integration tests
+    strategy:
+      fail-fast: true
+      matrix:
+        os:
+          - ubuntu-latest # x86_64-linux
+          #          - macos-latest  # aarch64
+          #          - macos-13      # x86_64-darwin
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bazelbuild/setup-bazelisk@v3
+      - name: Mount bazel cache
+        uses: actions/cache@v4
+        with:
+          save-always: true
+          path: |
+            ~/.cache/bazel
+          key: ${{ matrix.os }}-bazel-ci-cache
+      - name: Format check
+        run: |
+          bazel run //tools/format:format.check
+      - name: Build server
+        run: |
+          bazel build //server/...
+      - name: Run tests
+        run: |
+          bazel test //server/...
