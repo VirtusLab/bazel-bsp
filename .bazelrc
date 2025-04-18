@@ -69,3 +69,6 @@ common --experimental_rule_extension_api
 
 # https://github.com/protocolbuffers/protobuf/issues/16944#issuecomment-2530220696
 build --host_cxxopt=-std=c++14 --cxxopt=-std=c++14
+
+# aarch64-darwin (macos sequoia) fix
+build --host_features=-module_maps
