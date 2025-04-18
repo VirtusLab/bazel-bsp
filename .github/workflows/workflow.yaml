@@ -34,3 +34,6 @@ jobs:
       - name: Run tests
         run: |
           bazel test //server/...
+      - name: Run e2e tests
+        run: |
+          bazel test //server/e2e:all_tests --test_tag_filters=-ci-disabled

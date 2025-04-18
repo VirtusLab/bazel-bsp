@@ -19,6 +19,7 @@ bazel_integration_test_all_versions(
     },
     project_path = "test-projects/workspace/sample-repo",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspSampleRepoTest",
+    additional_tags = ["ci-disabled"],
 )
 
 bazel_integration_test_all_versions(
@@ -27,6 +28,7 @@ bazel_integration_test_all_versions(
     bzlmod_project_path = "test-projects/bzlmod/local-jdk-project",
     project_path = "test-projects/workspace/local-jdk-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspLocalJdkTest",
+    additional_tags = ["ci-disabled"],
 )
 
 bazel_integration_test_all_versions(
@@ -40,6 +42,7 @@ bazel_integration_test_all_versions(
     name = "cpp_project_test",
     project_path = "test-projects/workspace/cpp-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspCppProjectTest",
+    additional_tags = ["ci-disabled"],
 )
 
 bazel_integration_test_all_versions(
@@ -67,6 +70,7 @@ bazel_integration_test_all_versions(
     name = "enabled_rules_test",
     project_path = "test-projects/workspace/enabled-rules-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspScalaProjectTest",
+    additional_tags = ["ci-disabled"],
 )
 
 bazel_integration_test(
@@ -78,24 +82,29 @@ bazel_integration_test(
     },
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:ServerDownloadsBazeliskTest",
     workspace_path = "test-projects/workspace/sample-repo",
+    tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS + ["ci-disabled"],
 )
 
 bazel_integration_test_current_version(
     name = "android_project_test",
+    additional_env_inherit = ["JAVA_HOME"],
     project_path = "test-projects/workspace/android-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspAndroidProjectTest",
+    additional_tags = ["ci-disabled"],
 )
 
 bazel_integration_test_current_version(
     name = "android_kotlin_project_test",
     project_path = "test-projects/workspace/android-kotlin-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspAndroidKotlinProjectTest",
+    additional_tags = ["ci-disabled"],
 )
 
 bazel_integration_test_current_version(
     name = "go_project_test",
     project_path = "test-projects/workspace/go-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspGoProjectTest",
+    additional_tags = ["ci-disabled"],
 )
 
 bazel_integration_test_all_versions(
