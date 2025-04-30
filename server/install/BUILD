@@ -1,4 +1,5 @@
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary", "kt_jvm_library")
+load("@rules_jvm_external//:kt_defs.bzl", "kt_jvm_export")
 
 kt_jvm_binary(
     name = "install",

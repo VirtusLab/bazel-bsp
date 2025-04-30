@@ -2,11 +2,24 @@ package org.jetbrains.bazel.install
 
 import org.jetbrains.bazel.commons.constants.Constants.DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bazel.install.cli.CliOptions
+import org.jetbrains.bazel.install.installationcontext.InstallationContext
+import org.jetbrains.bazel.install.installationcontext.InstallationContextJavaPathEntity
+import org.jetbrains.bazel.install.installationcontext.InstallationContextJavaPathEntityMapper
+import org.jetbrains.bazel.install.installationcontext.InstallationContextDebuggerAddressEntity
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isRegularFile
 
 object InstallationContextProvider {
+  fun createInstallationContext(cliOptions: CliOptions): InstallationContext {
+    return InstallationContext(
+       javaPath = cliOptions.javaPath?.let { InstallationContextJavaPathEntity(it) } ?: (InstallationContextJavaPathEntityMapper.default()),
+       debuggerAddress = cliOptions.debuggerAddress?.let { InstallationContextDebuggerAddressEntity(it) },
+       projectViewFilePath = calculateGeneratedProjectViewPath(cliOptions),
+       bazelWorkspaceRootDir = cliOptions.bazelWorkspaceRootDir
+    )
+  }
+
   fun generateAndSaveProjectViewFileIfNeeded(cliOptions: CliOptions) {
     val generatedProjectViewFilePath = calculateGeneratedProjectViewPath(cliOptions)
     if (!generatedProjectViewFilePath.isFileExisted() || cliOptions.projectViewCliOptions != null) {

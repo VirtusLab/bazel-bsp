@@ -32,7 +32,7 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
     }
 
   init {
-    EnvironmentCreator(workspaceRoot).create()
+    //EnvironmentCreator(workspaceRoot).create()
   }
 
   private fun generateNewConnectionResetConfig(): ConnectionResetConfig =
@@ -47,7 +47,7 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
     return BazelClient(
       consoleService.syncConsole,
       consoleService.buildConsole,
-      project,
+      //project,
     )
   }
 

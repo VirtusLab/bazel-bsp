@@ -1,5 +1,8 @@
 package org.jetbrains.bazel.install
 
+import ch.epfl.scala.bsp4j.BspConnectionDetails
+import com.google.gson.GsonBuilder
+import org.jetbrains.bazel.install.installationcontext.InstallationContext
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import java.nio.file.FileSystems
@@ -15,8 +18,31 @@ import kotlin.io.path.notExists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
-class EnvironmentCreator(private val projectRootDir: Path) {
-  fun create() = createDotBazelBsp()
+class EnvironmentCreator(
+  private val projectRootDir: Path,
+  private val installationContext: InstallationContext,
+  private val discoveryDetails: BspConnectionDetails,
+  
+) {
+  fun create(): Path {
+    createDotBsp(discoveryDetails)
+    return createDotBazelBsp()
+  }
+
+  private fun createDotBsp(discoveryDetails: BspConnectionDetails) {
+    val dir = createDir(projectRootDir, Constants.DOT_BSP_DIR_NAME)
+    createBspDiscoveryDetailsFile(dir, discoveryDetails)
+  }
+
+  private fun createBspDiscoveryDetailsFile(dotBspDir: Path, discoveryDetails: BspConnectionDetails) {
+    val destinationBspDiscoveryFilePath = dotBspDir.resolve(Constants.BAZELBSP_JSON_FILE_NAME)
+    writeJsonToFile(destinationBspDiscoveryFilePath, discoveryDetails)
+  }
+
+  private fun <T> writeJsonToFile(destinationPath: Path, data: T) {
+    val fileContent = GsonBuilder().setPrettyPrinting().create().toJson(data)
+    Files.writeString(destinationPath, fileContent)
+  }
 
   private fun createDotBazelBsp(): Path {
     val bazelBspDir = createDir(projectRootDir, Constants.DOT_BAZELBSP_DIR_NAME)

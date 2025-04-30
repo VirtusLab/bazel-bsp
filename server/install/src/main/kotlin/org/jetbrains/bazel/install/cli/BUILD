@@ -9,5 +9,6 @@ kt_jvm_library(
     ],
     deps = [
         "//server/commons",
+        "@maven//:commons_cli_commons_cli",
     ],
 )

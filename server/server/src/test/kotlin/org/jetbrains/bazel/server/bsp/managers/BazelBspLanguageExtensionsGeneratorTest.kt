@@ -1,6 +1,9 @@
 package org.jetbrains.bazel.server.bsp.managers
 
 import io.kotest.matchers.equals.shouldBeEqual
+import org.jetbrains.bazel.install.BspConnectionDetailsCreator
+import org.jetbrains.bazel.install.installationcontext.InstallationContext
+import org.jetbrains.bazel.install.installationcontext.InstallationContextJavaPathEntity
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.label.Label
@@ -10,6 +13,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.io.path.createTempDirectory
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -86,7 +90,14 @@ class BazelBspLanguageExtensionsGeneratorTest {
   fun before() {
     val tempRoot = createTempDirectory("test-workspace-root")
     tempRoot.toFile().deleteOnExit()
-    val dotBazelBspPath = EnvironmentCreator(tempRoot).create()
+    val installationContext = InstallationContext(
+      javaPath = InstallationContextJavaPathEntity(Paths.get("bin/java")),
+      projectViewFilePath = tempRoot,
+      bazelWorkspaceRootDir = tempRoot,
+      debuggerAddress = null,
+    )
+    val connectionDetails = BspConnectionDetailsCreator(installationContext, false).create()
+    val dotBazelBspPath = EnvironmentCreator(tempRoot, installationContext, connectionDetails).create()
 
     dotBazelBspAspectsPath = dotBazelBspPath.resolve("aspects")
     internalAspectsResolverMock = InternalAspectsResolver(BspInfoMock(dotBazelBspPath, tempRoot), bazelRelease, false)
