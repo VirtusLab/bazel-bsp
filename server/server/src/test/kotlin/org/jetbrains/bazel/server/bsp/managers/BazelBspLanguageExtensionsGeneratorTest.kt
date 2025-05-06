@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.server.bsp.managers
 
 import io.kotest.matchers.equals.shouldBeEqual
+import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bazel.install.BspConnectionDetailsCreator
+import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.install.installationcontext.InstallationContext
 import org.jetbrains.bazel.install.installationcontext.InstallationContextJavaPathEntity
-import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
-import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
@@ -90,12 +90,13 @@ class BazelBspLanguageExtensionsGeneratorTest {
   fun before() {
     val tempRoot = createTempDirectory("test-workspace-root")
     tempRoot.toFile().deleteOnExit()
-    val installationContext = InstallationContext(
-      javaPath = InstallationContextJavaPathEntity(Paths.get("bin/java")),
-      projectViewFilePath = tempRoot,
-      bazelWorkspaceRootDir = tempRoot,
-      debuggerAddress = null,
-    )
+    val installationContext =
+      InstallationContext(
+        javaPath = InstallationContextJavaPathEntity(Paths.get("bin/java")),
+        projectViewFilePath = tempRoot,
+        bazelWorkspaceRootDir = tempRoot,
+        debuggerAddress = null,
+      )
     val connectionDetails = BspConnectionDetailsCreator(installationContext, false).create()
     val dotBazelBspPath = EnvironmentCreator(tempRoot, installationContext, connectionDetails).create()
 

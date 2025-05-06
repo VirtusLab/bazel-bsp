@@ -1,18 +1,18 @@
 package org.jetbrains.bazel.install
 
-import org.jetbrains.bazel.install.installationcontext.InstallationContext
-import org.jetbrains.bazel.install.installationcontext.InstallationContextJavaPathEntity
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldNotBe
+import org.jetbrains.bazel.install.installationcontext.InstallationContext
+import org.jetbrains.bazel.install.installationcontext.InstallationContextJavaPathEntity
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
-import java.nio.file.Paths
 
 class EnvironmentCreatorTest {
   @Nested
@@ -29,12 +29,13 @@ class EnvironmentCreatorTest {
     @Test
     fun `should copy aspects from resources to dot bazelbsp directory`() {
       // when
-      val installationContext = InstallationContext(
-        javaPath = InstallationContextJavaPathEntity(Paths.get("bin/java")),
-        projectViewFilePath = tempRoot,
-        bazelWorkspaceRootDir = tempRoot,
-        debuggerAddress = null,
-      )
+      val installationContext =
+        InstallationContext(
+          javaPath = InstallationContextJavaPathEntity(Paths.get("bin/java")),
+          projectViewFilePath = tempRoot,
+          bazelWorkspaceRootDir = tempRoot,
+          debuggerAddress = null,
+        )
       val connectionDetails = BspConnectionDetailsCreator(installationContext, false).create()
       val dotBazelBsp: Path = EnvironmentCreator(tempRoot, installationContext, connectionDetails).create()
 

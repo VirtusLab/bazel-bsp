@@ -2,8 +2,8 @@ package org.jetbrains.bazel.install
 
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import com.google.gson.GsonBuilder
-import org.jetbrains.bazel.install.installationcontext.InstallationContext
 import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.install.installationcontext.InstallationContext
 import org.jetbrains.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import java.nio.file.FileSystems
 import java.nio.file.Files
@@ -22,7 +22,6 @@ class EnvironmentCreator(
   private val projectRootDir: Path,
   private val installationContext: InstallationContext,
   private val discoveryDetails: BspConnectionDetails,
-  
 ) {
   fun create(): Path {
     createDotBsp(discoveryDetails)

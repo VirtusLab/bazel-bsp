@@ -2,10 +2,7 @@ package org.jetbrains.bazel.install.cli
 
 import java.nio.file.Path
 
-data class HelpCliOptions(
-  val isHelpOptionUsed: Boolean,
-  val printHelp: () -> Unit,
-)
+data class HelpCliOptions(val isHelpOptionUsed: Boolean, val printHelp: () -> Unit)
 
 data class ProjectViewCliOptions(
   val bazelBinary: Path? = null,
@@ -30,10 +27,11 @@ data class ProjectViewCliOptions(
 data class CliOptions(
   val javaPath: Path? = null,
   val debuggerAddress: String? = null,
-  val helpCliOptions: HelpCliOptions = HelpCliOptions(
-    isHelpOptionUsed = false,
-    printHelp = { },
-  ),
+  val helpCliOptions: HelpCliOptions =
+    HelpCliOptions(
+      isHelpOptionUsed = false,
+      printHelp = { },
+    ),
   val workspaceDir: Path,
   val projectViewFilePath: Path? = null,
   val projectViewCliOptions: ProjectViewCliOptions? = null,

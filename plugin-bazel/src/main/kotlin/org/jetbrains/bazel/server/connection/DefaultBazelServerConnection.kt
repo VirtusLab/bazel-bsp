@@ -5,7 +5,6 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.server.client.BazelClient
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.ui.console.ConsoleService
@@ -32,7 +31,7 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
     }
 
   init {
-    //EnvironmentCreator(workspaceRoot).create()
+    // EnvironmentCreator(workspaceRoot).create()
   }
 
   private fun generateNewConnectionResetConfig(): ConnectionResetConfig =
@@ -47,7 +46,7 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
     return BazelClient(
       consoleService.syncConsole,
       consoleService.buildConsole,
-      //project,
+      // project,
     )
   }
 

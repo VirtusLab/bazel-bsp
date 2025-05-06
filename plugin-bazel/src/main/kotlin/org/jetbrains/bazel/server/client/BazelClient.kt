@@ -2,10 +2,7 @@ package org.jetbrains.bazel.server.client
 
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.ui.console.TaskConsole
-import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
 import org.jetbrains.bsp.protocol.CoverageReport
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
 import org.jetbrains.bsp.protocol.JoinedBuildClient
@@ -19,7 +16,7 @@ const val IMPORT_SUBTASK_ID: String = "import-subtask-id"
 class BazelClient(
   private val syncConsole: TaskConsole? = null,
   private val buildConsole: TaskConsole? = null,
-  //private val project: Project,
+  // private val project: Project,
 ) : JoinedBuildClient {
   private val log = logger<BazelClient>()
 
@@ -30,16 +27,16 @@ class BazelClient(
 
     // Legacy task handling
 //    if (params.originId == null || !BazelTaskEventsService.getInstance(project).existsListener(params.originId!!)) {
-      addMessageToConsole(params.originId, params.message)
+    addMessageToConsole(params.originId, params.message)
 //      return
 //    }
 
     val originId = params.originId ?: return // TODO
     val message = params.message
 
-    //BazelTaskEventsService.getInstance(project).withListener(originId) {
+    // BazelTaskEventsService.getInstance(project).withListener(originId) {
     //  onLogMessage(message)
-    //}
+    // }
   }
 
   override fun onBuildTaskStart(params: TaskStartParams) {
@@ -51,9 +48,9 @@ class BazelClient(
 
     val message = params.message ?: return
 
-    //BazelTaskEventsService.getInstance(project).withListener(originId) {
+    // BazelTaskEventsService.getInstance(project).withListener(originId) {
     //  onTaskStart(taskId, maybeParent, message, params.data)
-    //}
+    // }
   }
 
   override fun onBuildTaskFinish(params: TaskFinishParams) {
@@ -66,22 +63,21 @@ class BazelClient(
 
     val message = params.message ?: return
 
-    //BazelTaskEventsService.getInstance(project).withListener(originId) {
+    // BazelTaskEventsService.getInstance(project).withListener(originId) {
     //  onTaskFinish(taskId, maybeParent, message, status, params.data)
-    //}
+    // }
   }
 
   override fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams) {
-    //if (!BazelTaskEventsService.getInstance(project).existsListener(params.originId)) {
+    // if (!BazelTaskEventsService.getInstance(project).existsListener(params.originId)) {
     //  log.debug("Got diagnostics without listener: $params")
     //  addDiagnosticToConsole(params)
     //  return
-    //}
+    // }
 
     val originId = params.originId
     val textDocument = params.textDocument?.path
     val buildTarget = params.buildTarget
-
 
 //    BazelTaskEventsService.getInstance(project).withListener(originId) {
 //      params.diagnostics.forEach {
@@ -140,8 +136,8 @@ class BazelClient(
   }
 
   override fun onPublishCoverageReport(report: CoverageReport) {
-    //BazelTaskEventsService.getInstance(project).withListener(report.originId) {
+    // BazelTaskEventsService.getInstance(project).withListener(report.originId) {
     //  onPublishCoverageReport(report.coverageReport)
-    //}
+    // }
   }
 }
