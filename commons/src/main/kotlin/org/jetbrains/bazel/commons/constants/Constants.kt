@@ -7,6 +7,7 @@ object Constants {
   const val BAZEL_BUILD_COMMAND: String = "build"
   const val BAZEL_TEST_COMMAND: String = "test"
   const val BAZEL_COVERAGE_COMMAND: String = "coverage"
+
   const val BUILD_FILE_NAME: String = "BUILD"
   const val WORKSPACE_FILE_NAME: String = "WORKSPACE"
   const val ASPECT_REPOSITORY: String = "bazelbsp_aspect"
@@ -15,7 +16,13 @@ object Constants {
   const val EXTENSIONS_BZL: String = "extensions.bzl"
   const val TEMPLATE_EXTENSION: String = ".template"
   const val DOT_BAZELBSP_DIR_NAME: String = ".bazelbsp"
+  const val DOT_BSP_DIR_NAME: String = ".bsp"
   const val BAZELBSP_JSON_FILE_NAME: String = "bazelbsp.json"
   const val DEFAULT_PROJECT_VIEW_FILE_NAME = ".bazelproject"
   const val LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME = "projectview.bazelproject"
+  const val BAZELBSP_TRACE_JSON_FILE_NAME = "bazelbsp.trace.json"
+  const val BSP_VERSION: String = "2.1.0"
+  const val SERVER_CLASS_NAME: String = "org.jetbrains.bazel.server.connection.ServerInitializer"
+  const val CLASSPATH_FLAG: String = "-classpath"
+  val SUPPORTED_LANGUAGES: List<String> = listOf("java", "kotlin", "scala")
 }
