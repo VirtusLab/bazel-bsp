@@ -1,5 +1,7 @@
 """Developer versions of plugins."""
 
+BAZEL_BSP_ARTIFACT_VERSION = "3.4.3"
+
 INTELLIJ_BSP_VERSION = "9999.9.9"
 INTELLIJ_BAZEL_VERSION = "9999.9.9"
 

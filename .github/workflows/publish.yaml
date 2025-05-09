@@ -1,0 +1,27 @@
+name: Publish jar
+on:
+  release:
+    types: [created]
+    branches: [main, temporary-main]
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bazelbuild/setup-bazelisk@v3
+      - name: Mount bazel cache
+        uses: actions/cache@v4
+        with:
+          save-always: true
+          path: |
+            ~/.cache/bazel
+          key: ubuntu-latest-bazel-ci-cache
+      - name: Publish package
+        run: |
+          bazel run \
+            --define 'maven_repo=https://maven.pkg.github.com/virtuslab/bazel-bsp' \
+            //server/install:install_export.publish
+        env:
+          MAVEN_USER: virtuslab
+          MAVEN_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

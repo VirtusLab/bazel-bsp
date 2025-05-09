@@ -6,7 +6,7 @@ on:
     tags: [v*]
 jobs:
   integration-tests:
-    name: Run integration tests
+    name: Check formatting, build and test
     strategy:
       fail-fast: true
       matrix:
