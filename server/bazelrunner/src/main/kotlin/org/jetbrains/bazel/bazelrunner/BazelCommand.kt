@@ -219,12 +219,14 @@ abstract class BazelCommand(val bazelBinary: String) {
     BazelCommand(bazelBinary),
     HasEnvironment,
     HasMultipleTargets,
-    HasProgramArguments {
+    HasProgramArguments,
+    HasAdditionalBazelOptions {
     override val targets: MutableList<Label> = mutableListOf()
     override val excludedTargets: MutableList<Label> = mutableListOf()
     override val environment: MutableMap<String, String> = mutableMapOf()
     override val inheritedEnvironment: MutableList<String> = mutableListOf()
     override val programArguments: MutableList<String> = mutableListOf()
+    override val additionalBazelOptions: MutableList<String> = mutableListOf()
 
     override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
       val commandLine = mutableListOf(bazelBinary)
@@ -232,6 +234,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(startupOptions)
       commandLine.add("coverage")
       commandLine.addAll(options)
+      commandLine.addAll(additionalBazelOptions)
       commandLine.addAll(environment.map { (key, value) -> "--test_env=$key=$value" })
       commandLine.addAll(inheritedEnvironment.map { "--test_env=$it" })
       commandLine.addAll(programArguments.map { "--test_arg=$it" })
