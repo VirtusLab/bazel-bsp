@@ -318,6 +318,7 @@ class BazelRunnerBuilderTest {
     val command =
       bazelRunner.buildBazelCommand(mockContext) {
         coverage {
+          additionalBazelOptions.add("--additional-bazel-options")
           targets.add("in1".label())
           programArguments.addAll(listOf("hello", "world"))
           environment["key"] = "value"
@@ -335,6 +336,7 @@ class BazelRunnerBuilderTest {
         "--noprogress_in_terminal_title",
         "flag1",
         "flag2",
+        "--additional-bazel-options",
         "--test_env=key=value",
         "--test_arg=hello",
         "--test_arg=world",
