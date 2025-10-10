@@ -6,6 +6,7 @@ data class InitializeBuildData(
   val clientClassesRootDir: String? = null,
   val openTelemetryEndpoint: String? = null,
   val featureFlags: FeatureFlags? = null,
+  val limitedImport: List<String>? = null,
 )
 
 data class FeatureFlags(

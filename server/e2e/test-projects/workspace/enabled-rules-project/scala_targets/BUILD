@@ -5,3 +5,9 @@ scala_library(
     srcs = ["Example.scala"],
     deps = [],
 )
+
+scala_library(
+    name = "secondary_library",
+    srcs = ["SecondaryTargetSource.scala"],
+    deps = [],
+)

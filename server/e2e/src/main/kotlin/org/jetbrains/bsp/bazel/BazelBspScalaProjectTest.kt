@@ -22,6 +22,7 @@ import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import kotlinx.coroutines.future.await
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.label
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
 import java.util.UUID
@@ -60,7 +61,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
       "resolve project",
     ) { testClient.testResolveProject(2.minutes) }
 
-  override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
+  private fun createTarget(displayName: String): BuildTarget {
     val javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/"
     val jvmBuildTarget =
       JvmBuildTarget().also {
@@ -84,7 +85,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
 
     val target =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//scala_targets:library"),
+        BuildTargetIdentifier(displayName),
         listOf("library"),
         listOf("scala"),
         listOf(
@@ -99,19 +100,33 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
           it.canDebug = false
         },
       )
-    target.displayName = "$targetPrefix//scala_targets:library"
+    target.displayName = displayName
     target.baseDirectory = "file://\$WORKSPACE/scala_targets/"
     target.dataKind = "scala"
     target.data = scalaBuildTarget
-    return WorkspaceBuildTargetsResult(
-      listOf(target),
-    )
+
+    return target
   }
+
+  override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult =
+    WorkspaceBuildTargetsResult(
+      listOf(
+        createTarget("$targetPrefix//scala_targets:library"),
+        createTarget("$targetPrefix//scala_targets:secondary_library"),
+      ),
+    )
 
   private fun compareWorkspaceTargetsResults(): BazelBspTestScenarioStep =
     BazelBspTestScenarioStep(
       "compare workspace targets results",
     ) { testClient.testWorkspaceTargets(120.seconds, expectedWorkspaceBuildTargetsResult()) }
+
+  private fun BuildTargetIdentifier.getJar(): String =
+    this
+      .label()
+      .toString()
+      .substringAfter(":")
+      .trim() + ".jar"
 
   private fun scalaOptionsResults(): BazelBspTestScenarioStep {
     val expectedTargetIdentifiers = expectedTargetIdentifiers().filter { it.uri != "bsp-workspace-root" }
@@ -124,7 +139,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
             "$bazelBinDirectory/external/io_bazel_rules_scala_scala_library/io_bazel_rules_scala_scala_library.stamp/scala-library-2.12.14-stamped.jar",
             "$bazelBinDirectory/external/io_bazel_rules_scala_scala_reflect/io_bazel_rules_scala_scala_reflect.stamp/scala-reflect-2.12.14-stamped.jar",
           ),
-          "$bazelBinDirectory/scala_targets/library.jar",
+          "$bazelBinDirectory/scala_targets/${it.getJar()}",
         )
       }
     val expectedScalaOptionsResult = ScalacOptionsResult(expectedScalaOptionsItems)
@@ -142,7 +157,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
           it,
           emptyList(),
           emptyList(),
-          "$bazelBinDirectory/scala_targets/library.jar",
+          "$bazelBinDirectory/scala_targets/${it.getJar()}",
         )
       }
     val expectedScalaOptionsResult = ScalacOptionsResult(expectedScalaOptionsItems)
