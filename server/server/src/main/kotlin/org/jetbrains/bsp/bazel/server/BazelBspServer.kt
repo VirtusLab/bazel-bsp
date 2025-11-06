@@ -96,6 +96,7 @@ class BazelBspServer(
         compilationManager = compilationManager,
         bspClientLogger = bspClientLogger,
         featureFlags = featureFlags,
+        limitedImport = initializeBuildData.limitedImport,
       )
     val bspProjectMapper =
       BspProjectMapper(
@@ -171,6 +172,7 @@ class BazelBspServer(
     compilationManager: BazelBspCompilationManager,
     bspClientLogger: BspClientLogger,
     featureFlags: FeatureFlags,
+    limitedImport: List<String>? = null,
   ): ProjectProvider {
     val aspectsResolver =
       InternalAspectsResolver(
@@ -202,6 +204,7 @@ class BazelBspServer(
         kotlinAndroidModulesMerger,
         bspClientLogger,
         featureFlags,
+        limitedImport,
       )
     val targetInfoReader = TargetInfoReader(bspClientLogger)
 
