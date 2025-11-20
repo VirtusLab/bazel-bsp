@@ -53,7 +53,6 @@ class WorkspaceStateCache(
     val digest = MessageDigest.getInstance("SHA-256")
 
     digest.update(workspaceRoot.toString().toByteArray())
-
     digest.update(aspectVersion.toByteArray())
 
     targetPatterns.forEach { pattern ->
