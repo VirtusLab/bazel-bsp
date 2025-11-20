@@ -99,7 +99,6 @@ class ProjectResolver(
         requestedTargetsToSync
           ?.let { TargetsSpec(it, emptyList()) } ?: workspaceContext.targets
 
-      // Compute workspace state hash for caching
       val stateHash: String = measured(description = "Computing workspace state hash") {
         workspaceStateCache.computeWorkspaceStateHash(
           aspectVersion = "v1", // TODO: get actual aspect version
@@ -107,17 +106,14 @@ class ProjectResolver(
         )
       }
 
-      // Try to use cached aspect outputs
       val cachedOutputs: Set<java.nio.file.Path>? = measured(description = "Checking workspace cache") {
         workspaceStateCache.getCachedFiles(currentStateHash = stateHash)
       }
 
       val finalAspectOutputs: Set<java.nio.file.Path> = if (cachedOutputs != null) {
-        // Cache hit - skip Bazel entirely!
         bspClientLogger.message("Using cached aspect outputs, skipping Bazel build")
         cachedOutputs
       } else {
-        // Cache miss - run Bazel
         bspClientLogger.message("Cache miss, running Bazel aspect build")
         val buildAspectResult =
           measured(
@@ -128,7 +124,6 @@ class ProjectResolver(
           description = "Reading aspect output paths",
         ) { buildAspectResult.bepOutput.filesByOutputGroupNameTransitive(BSP_INFO_OUTPUT_GROUP) }
 
-        // Save to cache for next time
         measured<Unit>(description = "Saving to workspace cache") {
           workspaceStateCache.saveCache(stateHash, aspectOutputFiles = outputs)
         }
@@ -136,7 +131,6 @@ class ProjectResolver(
         outputs
       }
 
-      val aspectOutputs = finalAspectOutputs.toList()
       val targets =
         measured(
           "Parsing aspect outputs",
