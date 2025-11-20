@@ -41,6 +41,7 @@ class ProjectResolver(
   private val bazelPathsResolver: BazelPathsResolver,
   private val bspClientLogger: BspClientLogger,
   private val featureFlags: FeatureFlags,
+  private val workspaceStateCache: WorkspaceStateCache,
 ) {
   private suspend fun <T> measured(description: String, f: suspend () -> T): T = tracer.spanBuilder(description).useWithScope { f() }
 
@@ -98,21 +99,50 @@ class ProjectResolver(
         requestedTargetsToSync
           ?.let { TargetsSpec(it, emptyList()) } ?: workspaceContext.targets
 
-      val buildAspectResult =
-        measured(
-          "Building project with aspect",
-        ) { buildProjectWithAspect(cancelChecker, workspaceContext, build, targetsToSync, featureFlags, firstPhaseProject) }
+      // Compute workspace state hash for caching
+      val stateHash: String = measured(description = "Computing workspace state hash") {
+        workspaceStateCache.computeWorkspaceStateHash(
+          aspectVersion = "v1", // TODO: get actual aspect version
+          targetPatterns = targetsToSync.values.map { it.toString() },
+        )
+      }
 
-      val aspectOutputs =
-        measured(
-          "Reading aspect output paths",
+      // Try to use cached aspect outputs
+      val cachedOutputs: Set<java.nio.file.Path>? = measured(description = "Checking workspace cache") {
+        workspaceStateCache.getCachedFiles(currentStateHash = stateHash)
+      }
+
+      val finalAspectOutputs: Set<java.nio.file.Path> = if (cachedOutputs != null) {
+        // Cache hit - skip Bazel entirely!
+        bspClientLogger.message("Using cached aspect outputs, skipping Bazel build")
+        cachedOutputs
+      } else {
+        // Cache miss - run Bazel
+        bspClientLogger.message("Cache miss, running Bazel aspect build")
+        val buildAspectResult =
+          measured(
+            description = "Building project with aspect",
+          ) { buildProjectWithAspect(cancelChecker, workspaceContext, build, targetsToSync, featureFlags, firstPhaseProject) }
+
+        val outputs: Set<java.nio.file.Path> = measured(
+          description = "Reading aspect output paths",
         ) { buildAspectResult.bepOutput.filesByOutputGroupNameTransitive(BSP_INFO_OUTPUT_GROUP) }
+
+        // Save to cache for next time
+        measured<Unit>(description = "Saving to workspace cache") {
+          workspaceStateCache.saveCache(stateHash, aspectOutputFiles = outputs)
+        }
+
+        outputs
+      }
+
+      val aspectOutputs = finalAspectOutputs.toList()
       val targets =
         measured(
           "Parsing aspect outputs",
         ) {
           targetInfoReader
-            .readTargetMapFromAspectOutputs(aspectOutputs)
+            .readTargetMapFromAspectOutputs(finalAspectOutputs)
             .map { (k, v) ->
               // TODO: make sure we canonicalize everything
               //  (https://youtrack.jetbrains.com/issue/BAZEL-1595/Merge-WildcardTargetExpander-and-BazelLabelExpander)
