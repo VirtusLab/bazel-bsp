@@ -101,7 +101,7 @@ class ProjectResolver(
 
       val stateHash: String = measured(description = "Computing workspace state hash") {
         workspaceStateCache.computeWorkspaceStateHash(
-          aspectVersion = "v1", // TODO: get actual aspect version
+          aspectVersion = "v1", // TODO: think about using less manual discriminator
           targetPatterns = targetsToSync.values.map { it.toString() },
         )
       }
