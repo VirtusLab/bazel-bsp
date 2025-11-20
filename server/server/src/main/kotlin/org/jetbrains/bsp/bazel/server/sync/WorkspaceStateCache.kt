@@ -43,8 +43,8 @@ class WorkspaceStateCache(
   private val bspClientLogger: BspClientLogger,
 ) {
   private val cacheDir: Path = workspaceRoot.resolve(".bazelbsp").resolve("aspect_cache")
-  private val manifestFile: Path = cacheDir.resolve("manifest.txt")
-  private val stateFile: Path = cacheDir.resolve("state.txt")
+  private val aspectOutputsFile: Path = cacheDir.resolve("aspect_outputs")
+  private val stateHashFile: Path = cacheDir.resolve("state_hash")
 
   fun computeWorkspaceStateHash(
     aspectVersion: String,
@@ -69,20 +69,20 @@ class WorkspaceStateCache(
   }
 
   fun getCachedFiles(currentStateHash: String): Set<Path>? {
-    if (!cacheDir.exists() || !manifestFile.exists() || !stateFile.exists()) {
+    if (!cacheDir.exists() || !aspectOutputsFile.exists() || !stateHashFile.exists()) {
       bspClientLogger.message("Aspect cache not found. Running Bazel aspect build...")
       return null
     }
 
     try {
-      val cachedState = stateFile.readText().trim()
+      val cachedState = stateHashFile.readText().trim()
 
       if (cachedState != currentStateHash) {
         bspClientLogger.message("Workspace state has changed. Re-running Bazel aspect build...")
         return null
       }
 
-      val cachedFiles = manifestFile.readText().lines().filter { it.isNotBlank() }.map { Path.of(it) }
+      val cachedFiles = aspectOutputsFile.readText().lines().filter { it.isNotBlank() }.map { Path.of(it) }
 
       val missingFiles = cachedFiles.filterNot { it.exists() }
       if (missingFiles.isNotEmpty()) {
@@ -103,10 +103,10 @@ class WorkspaceStateCache(
       if (!cacheDir.exists()) {
         Files.createDirectories(cacheDir)
       }
-      stateFile.writeText(stateHash)
+      stateHashFile.writeText(stateHash)
 
       val manifestContent = aspectOutputFiles.joinToString("\n") { it.toString() }
-      manifestFile.writeText(manifestContent)
+      aspectOutputsFile.writeText(manifestContent)
 
       bspClientLogger.message("Aspect outputs cached (${aspectOutputFiles.size} files)")
     } catch (e: Exception) {
