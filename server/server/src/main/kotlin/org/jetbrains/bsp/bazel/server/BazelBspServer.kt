@@ -34,6 +34,7 @@ import org.jetbrains.bsp.bazel.server.sync.ProjectResolver
 import org.jetbrains.bsp.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bsp.bazel.server.sync.TargetInfoReader
 import org.jetbrains.bsp.bazel.server.sync.TargetTagsResolver
+import org.jetbrains.bsp.bazel.server.sync.WorkspaceStateCache
 import org.jetbrains.bsp.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
 import org.jetbrains.bsp.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePluginsService
@@ -193,6 +194,7 @@ class BazelBspServer(
     val targetTagsResolver = TargetTagsResolver()
     val mavenCoordinatesResolver = MavenCoordinatesResolver()
     val kotlinAndroidModulesMerger = KotlinAndroidModulesMerger(featureFlags)
+    val workspaceStateCache = WorkspaceStateCache(workspaceRoot = bazelInfo.workspaceRoot, bspClientLogger = bspClientLogger)
     val bazelProjectMapper =
       BazelProjectMapper(
         languagePluginsService,
@@ -219,6 +221,7 @@ class BazelBspServer(
         bazelPathsResolver = bazelPathsResolver,
         bspClientLogger = bspClientLogger,
         featureFlags = featureFlags,
+        workspaceStateCache = workspaceStateCache
       )
     val firstPhaseProjectResolver =
       FirstPhaseProjectResolver(
