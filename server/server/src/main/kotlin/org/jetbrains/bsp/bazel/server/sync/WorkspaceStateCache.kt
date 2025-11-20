@@ -46,16 +46,6 @@ class WorkspaceStateCache(
   private val manifestFile: Path = cacheDir.resolve("manifest.txt")
   private val stateFile: Path = cacheDir.resolve("state.txt")
 
-  init {
-    try {
-      if (!cacheDir.exists()) {
-        Files.createDirectories(cacheDir)
-      }
-    } catch (e: Exception) {
-      bspClientLogger.warn("Failed to create workspace cache directory: ${e.message}")
-    }
-  }
-
   fun computeWorkspaceStateHash(
     aspectVersion: String,
     targetPatterns: List<String>,
@@ -111,6 +101,9 @@ class WorkspaceStateCache(
 
   fun saveCache(stateHash: String, aspectOutputFiles: Set<Path>) {
     try {
+      if (!cacheDir.exists()) {
+        Files.createDirectories(cacheDir)
+      }
       stateFile.writeText(stateHash)
 
       val manifestContent = aspectOutputFiles.joinToString("\n") { it.toString() }
