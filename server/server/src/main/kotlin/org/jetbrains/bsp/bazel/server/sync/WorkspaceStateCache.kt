@@ -12,13 +12,31 @@ import kotlin.io.path.writeText
  * Caches Bazel aspect build outputs to avoid re-running expensive aspect builds
  * when workspace hasn't changed.
  *
- * This cache stores:
- * - All bsp-info-*.binaryproto files from a successful aspect build
- * - A manifest of what was cached
- * - A state hash representing the workspace state when cached
+ * ## Why this cache is needed:
  *
- * If the workspace state hash hasn't changed (BUILD files unchanged, aspect version same),
- * we can use the memoized build artifacts and not rerun Bazel aspect build.
+ * The main reason for this cache is that we use `--override_repository` flag in Bazel 7,
+ * which forces Bazel to invalidate its analysis cache and start from scratch on every build.
+ * This is the only available option in Bazel 7. In Bazel 8, `--inject_repository` can be used
+ * instead, which reuses the repository and preserves Bazel's internal cache.
+ *
+ * By caching the aspect output file paths, we can skip the aspect build entirely
+ * when the workspace state is unchanged, making subsequent syncs much faster.
+ *
+ * ## What this cache stores:
+ *
+ * This cache stores ONLY the file paths to aspect outputs, NOT the files themselves.
+ * The actual bsp-info-*.binaryproto files are stored by Bazel in its output directory
+ * (typically bazel-bin/). This cache just remembers where those files are located.
+ *
+ * Specifically, it stores:
+ * - A manifest file (manifest.txt) - list of paths to bsp-info-*.binaryproto files
+ * - A state file (state.txt) - hash of workspace state (BUILD files, aspect version, target patterns)
+ *
+ * ## How it works:
+ *
+ * 1. Before running aspect build, compute current workspace state hash
+ * 2. If hash matches cached state AND all cached files still exist -> cache hit, skip Bazel
+ * 3. Otherwise -> cache miss, run Bazel aspect build and save new file paths to cache
  */
 class WorkspaceStateCache(
   private val workspaceRoot: Path,
