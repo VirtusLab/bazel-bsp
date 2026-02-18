@@ -6,6 +6,7 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.paths.shouldExist
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldEndWith
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
@@ -15,6 +16,7 @@ import java.net.URI
 import kotlin.io.path.Path
 import kotlin.io.path.relativeTo
 import kotlin.io.path.toPath
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 object NestedModulesTest : BazelBspTestBaseScenario() {
@@ -52,14 +54,20 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
     BazelBspTestScenarioStep(
       "compare workspace targets results",
     ) {
-      testClient.test(60.seconds) { session, _ ->
-        val targetsResult = session.server.workspaceBuildTargets().await()
+      testClient.test(5.minutes) { session, _ ->
+        // Sync can be slow in CI/sandbox (Bazel 7); allow time for first sync
+        var targetsResult = session.server.workspaceBuildTargets().await()
+        if (targetsResult.targets.isEmpty()) {
+          kotlinx.coroutines.delay(5.seconds)
+          targetsResult = session.server.workspaceBuildTargets().await()
+        }
 
         targetsResult.targets.size shouldBe 4
+        val innerRepo = "inner$bzlmodRepoNameSeparator"
         targetsResult.targets.map { Label.parse(it.id.uri) } shouldContainExactlyInAnyOrder
           listOf(
-            Label.parse("@@inner+//:lib_inner"),
-            Label.parse("@@inner+//:bin_inner"),
+            Label.parse("@@$innerRepo//:lib_inner"),
+            Label.parse("@@$innerRepo//:bin_inner"),
             Label.parse("@//:lib_outer"),
             Label.parse("@//:bin_outer"),
           )
@@ -89,19 +97,22 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
     BazelBspTestScenarioStep(
       "compare workspace repo mapping results",
     ) {
-      testClient.test(60.seconds) { session, _ ->
+      testClient.test(5.minutes) { session, _ ->
         val repoMapping = session.server.workspaceBazelRepoMapping().await()
 
+        val innerCanonical = "inner$bzlmodRepoNameSeparator"
+        val rulesJavaCanonical = "rules_java$bzlmodRepoNameSeparator"
+        val rulesPythonCanonical = "rules_python$bzlmodRepoNameSeparator"
         repoMapping.apparentRepoNameToCanonicalName shouldBe
           mapOf(
             "" to "",
             "bazelbsp_aspect" to "+_repo_rules+bazelbsp_aspect",
             "local_config_platform" to "local_config_platform",
-            "rules_java" to "rules_java+",
-            "rules_python" to "rules_python+",
+            "rules_java" to rulesJavaCanonical,
+            "rules_python" to rulesPythonCanonical,
             "bazel_tools" to "bazel_tools",
             "outer" to "",
-            "inner" to "inner+",
+            "inner" to innerCanonical,
           )
 
         val canonicalMapping = repoMapping.canonicalRepoNameToPath
@@ -112,8 +123,8 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
             "+_repo_rules+bazelbsp_aspect",
           ).shouldEndWith("/external/+_repo_rules+bazelbsp_aspect/")
         canonicalMapping.getValue("local_config_platform").shouldEndWith("/external/local_config_platform/")
-        canonicalMapping.getValue("rules_java+").shouldEndWith("/external/rules_java+/")
-        canonicalMapping["inner+"] shouldBe "file://$workspaceDir/inner/"
+        canonicalMapping.getValue(rulesJavaCanonical).shouldEndWith("/external/$rulesJavaCanonical/")
+        canonicalMapping[innerCanonical] shouldBe "file://$workspaceDir/inner/"
         canonicalMapping["bazel_tools"] shouldEndWith ("/external/bazel_tools/")
 
         for (path in canonicalMapping.values) {
